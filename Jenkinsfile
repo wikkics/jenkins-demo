@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USERNAME = 'wikkics'
+        DOCKERHUB_USERNAME = 'your-dockerhub-username'
         IMAGE_NAME         = 'jenkins-demo-app'
         IMAGE_TAG          = "${env.BUILD_NUMBER}"
     }
@@ -34,11 +34,11 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo "🐳 Building Docker image..."
-                sh """
-                    docker build -t ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} .
-                    docker tag ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG} \
-                               ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest
-                """
+                sh '''
+                    docker build -t $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG .
+                    docker tag $DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG \
+                               $DOCKERHUB_USERNAME/$IMAGE_NAME:latest
+                '''
             }
         }
 
@@ -47,14 +47,14 @@ pipeline {
                 echo "📤 Pushing image to Docker Hub..."
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-credentials',
-                    usernameVariable: 'wikkics',
-                    passwordVariable: 'W!kk!cs@101200'
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh """
+                    sh '''
                         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
-                        docker push ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest
-                    """
+                        docker push $DOCKER_USER/jenkins-demo-app:$IMAGE_TAG
+                        docker push $DOCKER_USER/jenkins-demo-app:latest
+                    '''
                 }
             }
         }
@@ -62,24 +62,24 @@ pipeline {
         stage('Deploy Container') {
             steps {
                 echo "🚀 Deploying application..."
-                sh """
+                sh '''
                     docker stop jenkins-demo-app || true
                     docker rm jenkins-demo-app   || true
 
                     docker run -d \
                         --name jenkins-demo-app \
                         -p 3000:3000 \
-                        ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest
+                        $DOCKERHUB_USERNAME/$IMAGE_NAME:latest
 
                     echo "✅ App deployed on port 3000!"
-                """
+                '''
             }
         }
     }
 
     post {
         success {
-            echo "✅ Pipeline SUCCESS! Image: ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+            echo "✅ Pipeline SUCCESS! Build #${env.BUILD_NUMBER}"
             echo "🌐 App URL: http://localhost:3000"
         }
         failure {
