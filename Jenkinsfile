@@ -12,6 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo "📥 Pulling code from GitHub..."
+                echo "Branch: ${env.GIT_BRANCH}"
                 echo "Commit: ${env.GIT_COMMIT}"
             }
         }
@@ -62,11 +63,9 @@ pipeline {
             steps {
                 echo "🚀 Deploying application..."
                 sh """
-                    # Stop existing container if running
                     docker stop jenkins-demo-app || true
                     docker rm jenkins-demo-app   || true
 
-                    # Run new container
                     docker run -d \
                         --name jenkins-demo-app \
                         -p 3000:3000 \
@@ -80,11 +79,8 @@ pipeline {
 
     post {
         success {
-            echo """
-            ✅ Pipeline SUCCESS!
-            Image: ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
-            App URL: http://localhost:3000
-            """
+            echo "✅ Pipeline SUCCESS! Image: ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+            echo "🌐 App URL: http://localhost:3000"
         }
         failure {
             echo "❌ Pipeline FAILED at build #${env.BUILD_NUMBER}"
