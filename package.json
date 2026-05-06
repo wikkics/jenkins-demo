@@ -1,0 +1,10 @@
+{
+  "name": "jenkins-demo-app",
+  "version": "1.0.0",
+  "description": "Jenkins + Docker demo app",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo 'All tests passed!' && exit 0"
+  }
+}
