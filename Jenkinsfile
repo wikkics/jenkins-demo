@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USERNAME = 'your-dockerhub-username'
+        DOCKERHUB_USERNAME = 'wikkics'
         IMAGE_NAME         = 'jenkins-demo-app'
         IMAGE_TAG          = "${env.BUILD_NUMBER}"
     }
